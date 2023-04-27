@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scenario>
+
+    <waypoint id="corner1" x="32.5" y="5" r="2"/>
+    <waypoint id="corner2" x="32.5" y="25" r="2"/>
+    <waypoint id="corner3" x="-2.5" y="25" r="2"/>
+    <waypoint id="corner4" x="-2.5" y="5" r="2"/>
+	
+
+    <agent x="2.5" y="2.5" n="1" dx="0" dy="0" type="2"/>
+
+
+        <!--AgentClusters-->
+    <agent x="1" y="2.5" n="1" dx="1" dy="1" type="3">
+      <addwaypoint id="corner1"/>
+      <addwaypoint id="corner2"/>
+      <addwaypoint id="corner3"/>
+      <addwaypoint id="corner4"/>
+    </agent>
+
+    
+</scenario>

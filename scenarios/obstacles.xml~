@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scenario>
+
+  <obstacle x1="10" y1="0" x2="25" y2="0"/>
+
+    <waypoint id="corner1" x="30" y="0" r="2"/>
+    <waypoint id="corner2" x="0" y="0" r="2"/>
+	
+
+    <agent x="2.5" y="0" n="1" dx="0" dy="0" type="2"/>
+
+
+        <!--AgentClusters-->
+    <agent x="1" y="0" n="1" dx="1" dy="1" type="3">
+      <addwaypoint id="corner1"/>
+      <addwaypoint id="corner2"/>
+    </agent>
+
+    
+</scenario>
