@@ -10,22 +10,21 @@
   <obstacle x1="0" y1="5" x2="0" y2="25"/>
   <obstacle x1="35" y1="0" x2="35" y2="30"/>
   <obstacle x1="30" y1="5" x2="30" y2="25"/>
-
-    <waypoint id="corner1" x="32.5" y="2.5" r="2"/>
-    <waypoint id="corner2" x="32.5" y="28.5" r="2"/>
-    <waypoint id="corner3" x="-2.5" y="28.5" r="2"/>
-    <waypoint id="corner4" x="-2.5" y="2.5" r="2"/>
-	
+	<waypoint id="corner4" x="32.5" y="2.5" r="2"/>
+    <waypoint id="corner3" x="32.5" y="28.5" r="2"/>
+    <waypoint id="corner2" x="-2.5" y="28.5" r="2"/>
+    <waypoint id="corner1" x="-2.5" y="2.5" r="2"/>
+    
 
     <agent x="2.5" y="2.5" n="1" dx="0" dy="0" type="2"/>
 
 
         <!--AgentClusters-->
     <agent x="1" y="2.5" n="1" dx="1" dy="1" type="3">
-      <addwaypoint id="corner4"/>
-      <addwaypoint id="corner3"/>
-      <addwaypoint id="corner2"/>
       <addwaypoint id="corner1"/>
+      <addwaypoint id="corner2"/>
+      <addwaypoint id="corner3"/>
+      <addwaypoint id="corner4"/>
     </agent>
 
     

@@ -4,7 +4,7 @@ import rospy
 from turtlesim.msg import Pose
 from geometry_msgs.msg import Twist, Point, PoseStamped, Pose
 from nav_msgs.msg import Odometry
-from pedsim_msgs.msg import AgentStates, LineObstacles
+from pedsim_msgs.msg import AgentStates, LineObstacles, Waypoints
 import math
 import numpy as np
 import csv
@@ -29,6 +29,7 @@ class HumanFollower:
         rospy.Subscriber('/pedsim_simulator/robot_position', Odometry, self.update_robot)
         rospy.Subscriber('/pedsim_simulator/simulated_agents', AgentStates, self.update_human)
         rospy.Subscriber('/pedsim_simulator/simulated_walls', LineObstacles, self.update_walls)
+        rospy.Subscriber('/pedsim_simulator/simulated_waypoints', Waypoints, self.update_waypoints)
 
         self.marker_pub = rospy.Publisher('/visualization_marker', Marker, queue_size=10)
         self.robot = None
@@ -36,7 +37,13 @@ class HumanFollower:
         self.obstacles = []
         self.rate = rospy.Rate(10)
 
+        self.human_goal = []
+
         self.results = []
+
+    def update_waypoints(self, Waypoints):
+        waypoint = Waypoints.waypoints[-1]
+        self.human_goal = [waypoint.position.x, waypoint.position.y, waypoint.radius]
 
     def update_walls(self, Message):
         obstacles = []
@@ -77,8 +84,8 @@ class HumanFollower:
                         
             self.pub.publish(cmd_vel)
             print(self.human)
-            self.results.append([*desired_pos, *self.robot, rospy.Time.now(), math.sqrt((desired_pos[0] - self.robot[0]) **2 + (desired_pos[1] - self.robot[1])**2), math.sqrt((self.human[0] - self.robot[0]) **2 + (self.human[1] - self.robot[1])**2), (np.arctan2([self.human[0]-self.robot[0]], [self.human[1]-self.robot[1]])[0]-self.human[2])%np.pi])
-            if(rospy.Time.now().secs - start_time.secs > 120):
+            self.results.append([*desired_pos, *self.robot, rospy.Time.now(), math.sqrt((desired_pos[0] - self.robot[0]) **2 + (desired_pos[1] - self.robot[1])**2), math.sqrt((self.human[0] - self.robot[0]) **2 + (self.human[1] - self.robot[1])**2), self.VirtualSpring.getOccluded()])
+            if(len(self.human_goal) > 0 and self.VirtualSpring.dist(self.human, self.human_goal) < self.human_goal[2]):
                 with open(os.path.join(rospack.get_path("human_following"), "csv", "results_" + self.algorithm + "_" + self.scenario + ".csv"), 'w', newline='') as csvfile:
                     writer = csv.writer(csvfile)
                     for state in self.results:
