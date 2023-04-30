@@ -17,12 +17,14 @@ obstacles = {
                   [[20, 25],[10, 10]], [[15, 25],[15, 15]]]
 }
 
-col = 0
+col = 2
 
 des_variance_means = []
 human_variance_means = []
 
 for sen in scenarios:
+    human_x = []
+    human_y = []
     astar_x = []
     astar_y = []
     spring_x = []
@@ -30,7 +32,9 @@ for sen in scenarios:
     with open('results_astar_' + sen + '.csv', newline='') as csvfile:
         for row in csv.reader(csvfile, delimiter=','):
             astar_x.append(list(map(lambda x: float(x), row))[col])
-            astar_y.append(list(map(lambda x: float(x), row))[col+1])    
+            astar_y.append(list(map(lambda x: float(x), row))[col+1])
+            human_x.append(list(map(lambda x: float(x), row))[0])
+            human_y.append(list(map(lambda x: float(x), row))[1])     
     with open('results_spring_' + sen + '.csv', newline='') as csvfile:
         for row in csv.reader(csvfile, delimiter=','):
             spring_x.append(list(map(lambda x: float(x), row))[col])
@@ -42,6 +46,7 @@ for sen in scenarios:
     plt.title(sen + ' Variance from Desired')
     plt.rcParams["figure.figsize"] = [7.00, 3.50]
     plt.rcParams["figure.autolayout"] = True
+    plt.plot(astar_x, astar_y, label='human')
     plt.plot(astar_x, astar_y, label='astar')
     plt.plot(spring_x, spring_y, label='spring')
     plt.legend()
