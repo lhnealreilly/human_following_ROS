@@ -84,7 +84,7 @@ class HumanFollower:
                         
             self.pub.publish(cmd_vel)
             print(self.human)
-            self.results.append([*self.human, *self.robot, rospy.Time.now(), math.sqrt((desired_pos[0] - self.robot[0]) **2 + (desired_pos[1] - self.robot[1])**2), math.sqrt((self.human[0] - self.robot[0]) **2 + (self.human[1] - self.robot[1])**2), self.VirtualSpring.getOccluded()])
+            self.results.append([*self.human[0:2], *self.robot, rospy.Time.now(), math.sqrt((desired_pos[0] - self.robot[0]) **2 + (desired_pos[1] - self.robot[1])**2), math.sqrt((self.human[0] - self.robot[0]) **2 + (self.human[1] - self.robot[1])**2), self.VirtualSpring.getOccluded()])
             if(len(self.human_goal) > 0 and self.VirtualSpring.dist(self.human, self.human_goal) < self.human_goal[2]):
                 with open(os.path.join(rospack.get_path("human_following"), "csv", "results_" + self.algorithm + "_" + self.scenario + ".csv"), 'w', newline='') as csvfile:
                     writer = csv.writer(csvfile)

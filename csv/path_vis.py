@@ -46,9 +46,9 @@ for sen in scenarios:
     plt.title(sen + ' Variance from Desired')
     plt.rcParams["figure.figsize"] = [7.00, 3.50]
     plt.rcParams["figure.autolayout"] = True
-    plt.plot(astar_x, astar_y, label='human')
-    plt.plot(astar_x, astar_y, label='astar')
-    plt.plot(spring_x, spring_y, label='spring')
+    plt.plot(human_x, human_y, label='human')
+    plt.plot(astar_x[2:], astar_y[2:], label='astar')
+    plt.plot(spring_x[2:], spring_y[2:], label='spring')
     plt.legend()
     plt.savefig(sen + '_path.png')
 

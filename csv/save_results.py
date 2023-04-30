@@ -15,7 +15,7 @@ current_results = []
 
 with open('results.csv', newline='') as csvfile:
     for i, row in enumerate(csv.reader(csvfile, delimiter=',')):
-        current_results.append([float(x) for x in row] if i > 1 else [x for x in row])
+        current_results.append(np.array([float(x) for x in row]) if i > 1 else [x for x in row])
 
 for sen in scenarios:
     astar_variance_des = []
@@ -38,14 +38,47 @@ for sen in scenarios:
     print(sen, mean(astar_variance_human), mean(spring_variance_human))
     des_variance_means.extend([mean(astar_variance_des), mean(spring_variance_des)])
     human_variance_means.extend([mean(astar_variance_human), mean(spring_variance_human)])
-    occlusions.extend([astar_occlusion, spring_occlusion])
+    occlusions.extend([float(astar_occlusion), float(spring_occlusion)])
 
-combined_results = [*des_variance_means, *human_variance_means, *occlusions]
+combined_results = np.array([*des_variance_means, *human_variance_means, *occlusions])
+
+current_results.append(combined_results)
+
+result_means = np.mean(np.array(current_results[1:]).astype(float), axis=0)
+
+xticks = []
+plt.figure()
+plt.title('Average Variance from Desired Location')
+plt.rcParams["figure.figsize"] = [8.00, 4.50]
+plt.rcParams["figure.autolayout"] = True
+for i, scen in enumerate(scenarios):
+    plt.bar(i*2, result_means[i*2], width=-0.8, label=scen, align='edge')
+    plt.bar(i*2, result_means[i*2+1], width=0.8, label=scen, align='edge')
+    xticks.extend([scen + ' AStar', scen + ' Spring'])
+plt.ylabel("Mean")
+plt.xlabel("Scenario")
+plt.xticks(np.arange(-0.5, len(xticks), 1), xticks, rotation=45, ha="right")
+plt.savefig('des_means.png')
+
+xticks = []
+plt.figure()
+plt.title('Average Variance from Human Location')
+plt.rcParams["figure.figsize"] = [8.00, 4.50]
+plt.rcParams["figure.autolayout"] = True
+for i, scen in enumerate(scenarios):
+    plt.bar(i*2, result_means[i*2 + len(scenarios)], width=-0.8, label=scen, align='edge')
+    plt.bar(i*2, result_means[i*2 + len(scenarios) + 1], width=0.8, label=scen, align='edge')
+    xticks.extend([scen + ' AStar', scen + ' Spring'])
+plt.axhline(y=2, color='r', linestyle='-')
+plt.ylabel("Mean")
+plt.xlabel("Scenario")
+plt.xticks(np.arange(-0.5, len(xticks), 1), xticks, rotation=45, ha="right")
+plt.savefig('human_means.png')
+
 for i in range(len(combined_results)):
-    if combined_results[i] == current_results[-1][i]:
+    if combined_results[i] != 0 and combined_results[i] == current_results[-2][i]:
         print(i, " Is the same as previous save")
         quit()
-current_results.append(combined_results)
 
 with open("results.csv", 'w', newline='') as csvfile:
     writer = csv.writer(csvfile)

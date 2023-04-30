@@ -12,7 +12,7 @@ def intersect(A,B,C,D):
     return ccw(A,C,D) != ccw(B,C,D) and ccw(A,B,C) != ccw(A,B,D)
 
 class VirtualSpring:
-  def __init__(self, desired_follow_distance, config_file="", desired_distance_range=[.25, .25], desired_angle_range=[np.pi/12, np.pi/12], desired_follow_angle=0, vel_cap=1.2) -> None:
+  def __init__(self, desired_follow_distance, config_file="", desired_distance_range=[.25, .25], desired_angle_range=[np.pi/12, np.pi/12], desired_follow_angle=0, vel_cap=1.4, predict=True) -> None:
     self.static_obstacles = []; # Position array of static obstacles
     self.human_trajectory = []; #Full trajectory array for followed agent
     self.human_velocity = []; #Stored human velocity vector
@@ -26,6 +26,7 @@ class VirtualSpring:
     self.desired_angle_range = desired_angle_range
     self.desired_distance_range = desired_distance_range
     self.vel_cap = vel_cap
+    self.predict = predict
 
     if(config_file != ""):
       rospack = rospkg.RosPack()
@@ -49,9 +50,11 @@ class VirtualSpring:
     pass
 
   #Predicts a location for a human time_step into the future using a dynamics model on the previous human locations
-  def human_prediction(self, time_step):
-    #TODO
-    pass
+  def human_prediction(self, n=10):
+    if len(self.human_trajectory) < 2:
+        return self.human_trajectory[-1]
+    current_human_vel = self.human_trajectory[-1] - self.human_trajectory[-2]
+    return self.human_trajectory[-1] + (current_human_vel * n)
 
 
   def repulsive_force(self, point, circle_center, radius, spring_k):
@@ -80,7 +83,9 @@ class VirtualSpring:
     if len(self.human_trajectory) == 0:
       return 0
     obstacles = self.static_obstacles
-
+    human = self.human_trajectory[-1]
+    if(self.predict):
+        human = self.human_prediction()
     lines = []
 
     for obstacle in obstacles:
@@ -88,7 +93,7 @@ class VirtualSpring:
 
       obstacle_pos = obstacle['position']
       if(obstacle_type == 'line'):
-        if intersect(obstacle_pos[0], obstacle_pos[1], self.human_trajectory[-1], self.robot_position):
+        if intersect(obstacle_pos[0], obstacle_pos[1], human, self.robot_position):
           return 1
     return 0
   
@@ -117,9 +122,10 @@ class VirtualSpring:
   def getDesired(self):
     if len(self.human_trajectory) == 0:
       return [0, 0]
+    human = self.human_trajectory[-1]
     angle_2 = 2* np.pi - self.desired_follow_angle
-    desired_position2 = [self.human_trajectory[-1][0] + (self.desired_follow_distance * math.sin(angle_2 + self.human_angle)), self.human_trajectory[-1][1] + (self.desired_follow_distance * math.cos(angle_2 + self.human_angle))]
-    desired_position = [self.human_trajectory[-1][0] + (self.desired_follow_distance * math.sin(self.desired_follow_angle + self.human_angle)), self.human_trajectory[-1][1] + (self.desired_follow_distance * math.cos(self.desired_follow_angle + self.human_angle))]
+    desired_position2 = [human[0] + (self.desired_follow_distance * math.sin(angle_2 + self.human_angle)), human[1] + (self.desired_follow_distance * math.cos(angle_2 + self.human_angle))]
+    desired_position = [human[0] + (self.desired_follow_distance * math.sin(self.desired_follow_angle + self.human_angle)), human[1] + (self.desired_follow_distance * math.cos(self.desired_follow_angle + self.human_angle))]
     if self.dist(self.robot_position, desired_position2) < self.dist(self.robot_position, desired_position):
       return desired_position2
     else:
@@ -128,13 +134,15 @@ class VirtualSpring:
   def getRobotControlVelocity(self, point=None):
     if len(self.human_trajectory) == 0:
       return [0, 0]
-    
+    human = self.human_trajectory[-1]
+    if(self.predict):
+        human = self.human_prediction()
     desired_position = point
     desired_position2 = point
     if point == None:
-      desired_position = [self.human_trajectory[-1][0] + (self.desired_follow_distance * math.sin(self.desired_follow_angle + self.human_angle)), self.human_trajectory[-1][1] + (self.desired_follow_distance * math.cos(self.desired_follow_angle + self.human_angle))]
+      desired_position = [human[0] + (self.desired_follow_distance * math.sin(self.desired_follow_angle + self.human_angle)), human[1] + (self.desired_follow_distance * math.cos(self.desired_follow_angle + self.human_angle))]
       angle_2 = 2* np.pi - self.desired_follow_angle
-      desired_position2 = [self.human_trajectory[-1][0] + (self.desired_follow_distance * math.sin(angle_2 + self.human_angle)), self.human_trajectory[-1][1] + (self.desired_follow_distance * math.cos(angle_2 + self.human_angle))]
+      desired_position2 = [human[0] + (self.desired_follow_distance * math.sin(angle_2 + self.human_angle)), human[1] + (self.desired_follow_distance * math.cos(angle_2 + self.human_angle))]
 
     robot_velocity = np.array([0.0, 0.0])
 
@@ -151,31 +159,31 @@ class VirtualSpring:
 
         #Create an occlusion force in the direction between the object and the human
         if self.dist(closest_point_on_line, self.robot_position) < 1:
-          diff1 = closest_point_on_line - self.human_trajectory[-1][0:2]
+          diff1 = closest_point_on_line - human[0:2]
           robot_velocity += ((((closest_point_on_line) + diff1 * 100) - closest_point_on_line) / np.linalg.norm(np.array([closest_point_on_line, (closest_point_on_line) + diff1 * 100] )) * -1 / self.dist(closest_point_on_line, self.robot_position) * self.OCCLUSION_CONSTANT)
           
           
     
-    #for occlusion_line in self.calc_occlusion_lines(self.human_trajectory[-1]):
+    #for occlusion_line in self.calc_occlusion_lines(human):
       #If near an occluding obstacle
       #if(self.dist(occlusion_line[0], self.robot_position) < 3):
         #robot_velocity += (occlusion_line[0] - occlusion_line[1]) / np.linalg.norm(occlusion_line) * np.array([-1, 1]) * self.OCCLUSION_CONSTANT
     
-    robot_velocity += np.array(list(self.repulsive_force(self.robot_position, self.human_trajectory[-1], .5, self.HUMAN_REPULSIVE)))
+    robot_velocity += np.array(list(self.repulsive_force(self.robot_position, human, .5, self.HUMAN_REPULSIVE)))
     
     #If the robot is within the desired range (currently set as +- 15 degrees and +- .25 meters) apply very little force towards the desired:
-    if (self.desired_follow_angle - self.desired_angle_range[0] < np.arctan2(*(self.robot_position - self.human_trajectory[-1][0:2])) - self.human_trajectory[-1][2] < self.desired_follow_angle + self.desired_angle_range[1]) and (self.desired_follow_distance - self.desired_distance_range[0] < self.dist(self.human_trajectory[-1], self.robot_position) < self.desired_follow_distance + self.desired_distance_range[1]):
-      robot_velocity = np.array(list(map(lambda x: self.HUMAN_BOUND_K_VALUE * (x[0] - x[1]), zip(desired_position, self.robot_position)))) #Default velocity with only the spring attached between the robot and human
+    if (self.desired_follow_angle - self.desired_angle_range[0] < np.arctan2(*(self.robot_position - human[0:2])) - human[2] < self.desired_follow_angle + self.desired_angle_range[1]) and (self.desired_follow_distance - self.desired_distance_range[0] < self.dist(human, self.robot_position) < self.desired_follow_distance + self.desired_distance_range[1]):
+      robot_velocity += np.array(list(map(lambda x: self.HUMAN_BOUND_K_VALUE * (x[0] - x[1]), zip(desired_position, self.robot_position)))) #Default velocity with only the spring attached between the robot and human
     else:
       vel1 = np.array(list(map(lambda x: self.HUMAN_K_VALUE * (x[0] - x[1]), zip(desired_position, self.robot_position))))
       vel2 = np.array(list(map(lambda x: self.HUMAN_K_VALUE * (x[0] - x[1]), zip(desired_position2, self.robot_position))))
       
-      robot_attractive = vel1 if np.linalg.norm(vel1 + robot_velocity)/(self.dist(desired_position, self.robot_position)*2) > np.linalg.norm(vel2 + robot_velocity)/(self.dist(desired_position2, self.robot_position)*2) else vel2
+      robot_attractive = vel1 if np.linalg.norm(vel1 + robot_velocity)/(self.dist(desired_position, self.robot_position)*2) > np.linalg.norm(vel2 + robot_velocity)/(self.dist(desired_position2, self.robot_position)*2.5) else vel2
       robot_attractive = robot_attractive if np.linalg.norm(robot_attractive) < self.vel_cap else robot_attractive / np.linalg.norm(robot_attractive) * self.vel_cap
-      robot_velocity = robot_attractive
+      robot_velocity += robot_attractive
     
     #Human deadzone so the robot doesn't run into the human
-    if (self.dist(self.robot_position, self.human_trajectory[-1]) < self.desired_follow_distance/2):
+    if (self.dist(self.robot_position, human) < self.desired_follow_distance/2):
       robot_velocity *= 0
     robot_velocity = robot_velocity if np.linalg.norm(robot_velocity) < self.vel_cap else robot_velocity / np.linalg.norm(robot_velocity) * self.vel_cap
     return list(robot_velocity)
