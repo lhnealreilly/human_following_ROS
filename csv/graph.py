@@ -70,8 +70,8 @@ plt.title('Average Variance from Desired Location')
 plt.rcParams["figure.figsize"] = [7.00, 3.50]
 plt.rcParams["figure.autolayout"] = True
 for i, mean in enumerate(des_variance_means):
-    plt.bar(i*2, mean[0][0], width=-0.8, label=mean[0][1], align='edge')
-    plt.bar(i*2, mean[1][0], width=0.8, label=mean[1][1], align='edge')
+    plt.bar(i*2, mean[0][0], width=-0.8, align='edge', color='b')
+    plt.bar(i*2, mean[1][0], width=0.8, align='edge', color='orange')
     xticks.extend([mean[0][1], mean[1][1]])
 plt.ylabel("Mean")
 plt.xlabel("Scenario")
@@ -80,18 +80,19 @@ plt.savefig('des_means.png')
 
 xticks = []
 plt.figure()
-plt.title('Average Variance from Human Location')
+plt.title('Average Distance from Human Location')
 plt.rcParams["figure.figsize"] = [7.00, 3.50]
 plt.rcParams["figure.autolayout"] = True
 for i, mean in enumerate(human_variance_means):
-    plt.bar(i*2, mean[0][0], width=-0.8, label=mean[0][1], align='edge')
-    plt.bar(i*2, mean[1][0], width=0.8, label=mean[1][1], align='edge')
+    plt.bar(i*2, mean[0][0], width=-0.8, align='edge', color='b')
+    plt.bar(i*2, mean[1][0], width=0.8, align='edge', color='orange')
     xticks.extend([mean[0][1], mean[1][1]])
-plt.axhline(y=2, color='r', linestyle='-')
+plt.axhline(y=2, color='r', linestyle='-', label='Desired')
 plt.ylabel("Mean")
 plt.xlabel("Scenario")
+plt.legend(loc='upper right', bbox_to_anchor=(1, 1.3))
 plt.xticks(np.arange(-0.5, len(xticks), 1), xticks, rotation=45, ha="right")
-plt.savefig('human_means.png')
+plt.savefig('human_means.png', bbox_inches='tight')
 
 
 

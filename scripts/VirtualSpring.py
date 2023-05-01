@@ -16,7 +16,7 @@ def shortest_angle(a1, a2):
   return (a + np.pi) % (2*np.pi) - np.pi
 
 class VirtualSpring:
-  def __init__(self, desired_follow_distance, config_file="", desired_distance_range=[.25, .25], desired_angle_range=[np.pi/12, np.pi/12], desired_follow_angle=0, vel_cap=1.4, predict=True) -> None:
+  def __init__(self, desired_follow_distance, config_file="", desired_distance_range=[.25, .25], desired_angle_range=[np.pi/12, np.pi/12], desired_follow_angle=0, vel_cap=1.4, predict=False) -> None:
     self.static_obstacles = []; # Position array of static obstacles
     self.human_trajectory = []; #Full trajectory array for followed agent
     self.human_velocity = []; #Stored human velocity vector
