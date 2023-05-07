@@ -35,12 +35,12 @@ for i in np.arange(*ranges, 0.5):
         if np.linalg.norm(desired_vel) == 0 :
             continue
         loc = np.array([i, j])
-        arrow = plt.arrow(*(loc - 0.5 * desired_vel), *(desired_vel), linewidth=0.1, head_width=0.2)
+        arrow = plt.arrow(*(loc - 0.5 * desired_vel), *(desired_vel), linewidth=0.1, head_width=0.1)
         plt.gca().add_patch(arrow)  
 circle1 = plt.Circle(human[0:2], 0.25,label='Human', color='r')
 
 for ob in ob_array:
-     plt.plot(ob[0], ob[1], label='wall', c='b')
+     plt.plot(ob[0], ob[1], label='wall', c='black')
 
 plt.gca().add_patch(circle1)
 plt.legend(loc='upper left')

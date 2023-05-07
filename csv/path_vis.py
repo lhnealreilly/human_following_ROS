@@ -41,7 +41,7 @@ for sen in scenarios:
             spring_y.append(list(map(lambda x: float(x), row))[col+1])
     plt.figure()
     for obstacle in obstacles[sen]:
-        plt.plot(obstacle[0], obstacle[1], 'b')
+        plt.plot(obstacle[0], obstacle[1], 'black')
     
     plt.title(sen + ' Variance from Desired')
     plt.rcParams["figure.figsize"] = [7.00, 3.50]

@@ -15,6 +15,13 @@ def shortest_angle(a1, a2):
   a = a1 - a2
   return (a + np.pi) % (2*np.pi) - np.pi
 
+def rotate(p, origin, angle):
+    R = np.array([[np.cos(angle), -np.sin(angle)],
+                  [np.sin(angle),  np.cos(angle)]])
+    o = np.atleast_2d(origin)
+    p = np.atleast_2d(p)
+    return np.squeeze((R @ (p.T-o.T) + o.T).T)
+
 class VirtualSpring:
   def __init__(self, desired_follow_distance, config_file="", desired_distance_range=[.25, .25], desired_angle_range=[np.pi/12, np.pi/12], desired_follow_angle=0, vel_cap=1.4, predict=True) -> None:
     self.static_obstacles = []; # Position array of static obstacles
@@ -84,7 +91,7 @@ class VirtualSpring:
     pass
 
   def getOccluded(self):
-    if len(self.human_trajectory) == 0:
+    if len(self.human_trajectory) == 0 or len(self.robot_position) == 0:
       return 0
     obstacles = self.static_obstacles
     human = self.human_trajectory[-1]
@@ -92,14 +99,18 @@ class VirtualSpring:
         human = self.human_prediction()
     lines = []
 
+    occlusion = 0
     for obstacle in obstacles:
-      obstacle_type = obstacle['type']
+            
+        obstacle_type = obstacle['type']
 
-      obstacle_pos = obstacle['position']
-      if(obstacle_type == 'line'):
-        if intersect(obstacle_pos[0], obstacle_pos[1], human, self.robot_position):
-          return 1
-    return 0
+        obstacle_pos = obstacle['position']
+        if(obstacle_type == 'line'):
+            for angle in np.linspace(-np.pi/3, np.pi/3, 10):
+                rotated_point = rotate(human[0:2], self.robot_position, angle)
+                if intersect(obstacle_pos[0], obstacle_pos[1], rotated_point, self.robot_position):
+                    occlusion += 1
+    return occlusion
   
   #Creates a line of occlusion between the human and the closest point of each obstacles to the robot
   def calc_occlusion_lines(self, human_position):

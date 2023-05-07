@@ -13,20 +13,20 @@ human_variance_means = []
 for sen in scenarios:
     astar_variance_des = []
     astar_variance_human = []
-    astar_occlusion = 0
+    astar_occlusion = []
     spring_variance_des = []
     spring_variance_human = []
-    spring_occlusion = 0
+    spring_occlusion = []
     with open('results_astar_' + sen + '.csv', newline='') as csvfile:
         for row in csv.reader(csvfile, delimiter=','):
             astar_variance_des.append(list(map(lambda x: float(x), row))[col])
             astar_variance_human.append(list(map(lambda x: float(x), row))[col+1])
-            astar_occlusion += list(map(lambda x: float(x), row))[col+2]     
+            astar_occlusion.append(list(map(lambda x: float(x), row))[col+2]/10)     
     with open('results_spring_' + sen + '.csv', newline='') as csvfile:
         for row in csv.reader(csvfile, delimiter=','):
             spring_variance_des.append(list(map(lambda x: float(x), row))[col])
             spring_variance_human.append(list(map(lambda x: float(x), row))[col+1])
-            spring_occlusion += list(map(lambda x: float(x), row))[col+2]
+            spring_occlusion.append(list(map(lambda x: float(x), row))[col+2]/10)
 
     plt.figure()
     plt.title(sen + ' Variance from Desired')
@@ -51,11 +51,11 @@ for sen in scenarios:
     plt.savefig(sen + '_variance_human.png')
 
     plt.figure()
-    plt.title(sen + 'Occlusion')
+    plt.title(sen + ' Occlusion')
     plt.rcParams["figure.figsize"] = [7.00, 3.50]
     plt.rcParams["figure.autolayout"] = True
-    plt.bar(0, astar_occlusion, label='astar')
-    plt.bar(1, spring_occlusion, label='spring')
+    plt.plot(astar_occlusion, label='astar')
+    plt.plot(spring_occlusion, label='spring')
     plt.legend()
     plt.ylabel("Occlusion")
     plt.xlabel("Algorithm")
@@ -70,8 +70,8 @@ plt.title('Average Variance from Desired Location')
 plt.rcParams["figure.figsize"] = [7.00, 3.50]
 plt.rcParams["figure.autolayout"] = True
 for i, mean in enumerate(des_variance_means):
-    plt.bar(i*2, mean[0][0], width=-0.8, label=mean[0][1], align='edge')
-    plt.bar(i*2, mean[1][0], width=0.8, label=mean[1][1], align='edge')
+    plt.bar(i*2, mean[0][0], width=-0.8, align='edge', color='b')
+    plt.bar(i*2, mean[1][0], width=0.8, align='edge', color='orange')
     xticks.extend([mean[0][1], mean[1][1]])
 plt.ylabel("Mean")
 plt.xlabel("Scenario")
@@ -80,18 +80,19 @@ plt.savefig('des_means.png')
 
 xticks = []
 plt.figure()
-plt.title('Average Variance from Human Location')
+plt.title('Average Distance from Human Location')
 plt.rcParams["figure.figsize"] = [7.00, 3.50]
 plt.rcParams["figure.autolayout"] = True
 for i, mean in enumerate(human_variance_means):
-    plt.bar(i*2, mean[0][0], width=-0.8, label=mean[0][1], align='edge')
-    plt.bar(i*2, mean[1][0], width=0.8, label=mean[1][1], align='edge')
+    plt.bar(i*2, mean[0][0], width=-0.8, align='edge', color='b')
+    plt.bar(i*2, mean[1][0], width=0.8, align='edge', color='orange')
     xticks.extend([mean[0][1], mean[1][1]])
-plt.axhline(y=2, color='r', linestyle='-')
+plt.axhline(y=2, color='r', linestyle='-', label='Desired')
 plt.ylabel("Mean")
 plt.xlabel("Scenario")
+plt.legend(loc='upper right', bbox_to_anchor=(1, 1.3))
 plt.xticks(np.arange(-0.5, len(xticks), 1), xticks, rotation=45, ha="right")
-plt.savefig('human_means.png')
+plt.savefig('human_means.png', bbox_inches='tight')
 
 
 
