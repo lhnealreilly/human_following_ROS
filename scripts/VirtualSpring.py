@@ -179,12 +179,12 @@ class VirtualSpring:
         
         if intersect(obstacle_pos[0], obstacle_pos[1], human, self.robot_position):
           hit = True
-          closest_end_point = obstacle_pos[0] if self.dist(obstacle_pos[0], human) < self.dist(obstacle_pos[1], human) else obstacle_pos[1]
+          closest_end_point = obstacle_pos[0] if self.dist(obstacle_pos[0], self.robot_position) < self.dist(obstacle_pos[1], self.robot_position) else obstacle_pos[1]
           if (closest_point_on_line[0] != closest_end_point[0]) or closest_point_on_line[1] != closest_end_point[1]:
             force = (closest_end_point - closest_point_on_line) / np.linalg.norm(closest_end_point - closest_point_on_line) * self.vel_cap * 1.5
             robot_velocity += force
           else:
-            further_point = obstacle_pos[1] if self.dist(obstacle_pos[0], human) < self.dist(obstacle_pos[1], human) else obstacle_pos[0]
+            further_point = obstacle_pos[1] if self.dist(obstacle_pos[0], self.robot_position) < self.dist(obstacle_pos[1], self.robot_position) else obstacle_pos[0]
             force = (closest_end_point - np.array(further_point)) / np.linalg.norm(closest_end_point -  np.array(further_point)) * self.vel_cap * 1
             robot_velocity += force
 
@@ -192,7 +192,7 @@ class VirtualSpring:
         elif not hit and self.dist(closest_point_on_line, self.robot_position) < 1:
           diff1 = closest_point_on_line - human[0:2]
           force = ((((closest_point_on_line) + diff1 * 100) - closest_point_on_line) / np.linalg.norm(np.array([closest_point_on_line, (closest_point_on_line) + diff1 * 100] )) * -1 / self.dist(closest_point_on_line, self.robot_position) * self.OCCLUSION_CONSTANT)
-          #occlusion_avoidance_force += force
+          occlusion_avoidance_force += force
     if not hit:
       robot_velocity += occlusion_avoidance_force
 
@@ -211,7 +211,7 @@ class VirtualSpring:
       vel1 = np.array(list(map(lambda x: self.HUMAN_K_VALUE * (x[0] - x[1]), zip(desired_position, self.robot_position))))
       vel2 = np.array(list(map(lambda x: self.HUMAN_K_VALUE * (x[0] - x[1]), zip(desired_position2, self.robot_position))))
       
-      robot_attractive = vel1 if np.linalg.norm(vel1 + robot_velocity)/(self.dist(desired_position, self.robot_position))**2 > np.linalg.norm(vel2 + robot_velocity)/(self.dist(desired_position2, self.robot_position))**2 else vel2
+      robot_attractive = vel1 #if np.linalg.norm(vel1 + robot_velocity)/(self.dist(desired_position, self.robot_position))**2 > np.linalg.norm(vel2 + robot_velocity)/(self.dist(desired_position2, self.robot_position))**2 else vel2
       robot_attractive = robot_attractive if np.linalg.norm(robot_attractive) < self.vel_cap else robot_attractive / np.linalg.norm(robot_attractive) * self.vel_cap
       robot_velocity += robot_attractive
     
