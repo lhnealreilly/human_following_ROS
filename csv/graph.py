@@ -13,20 +13,20 @@ human_variance_means = []
 for sen in scenarios:
     astar_variance_des = []
     astar_variance_human = []
-    astar_occlusion = 0
+    astar_occlusion = []
     spring_variance_des = []
     spring_variance_human = []
-    spring_occlusion = 0
+    spring_occlusion = []
     with open('results_astar_' + sen + '.csv', newline='') as csvfile:
         for row in csv.reader(csvfile, delimiter=','):
             astar_variance_des.append(list(map(lambda x: float(x), row))[col])
             astar_variance_human.append(list(map(lambda x: float(x), row))[col+1])
-            astar_occlusion += list(map(lambda x: float(x), row))[col+2]     
+            astar_occlusion.append(list(map(lambda x: float(x), row))[col+2]/10)     
     with open('results_spring_' + sen + '.csv', newline='') as csvfile:
         for row in csv.reader(csvfile, delimiter=','):
             spring_variance_des.append(list(map(lambda x: float(x), row))[col])
             spring_variance_human.append(list(map(lambda x: float(x), row))[col+1])
-            spring_occlusion += list(map(lambda x: float(x), row))[col+2]
+            spring_occlusion.append(list(map(lambda x: float(x), row))[col+2]/10)
 
     plt.figure()
     plt.title(sen + ' Variance from Desired')
@@ -51,11 +51,11 @@ for sen in scenarios:
     plt.savefig(sen + '_variance_human.png')
 
     plt.figure()
-    plt.title(sen + 'Occlusion')
+    plt.title(sen + ' Occlusion')
     plt.rcParams["figure.figsize"] = [7.00, 3.50]
     plt.rcParams["figure.autolayout"] = True
-    plt.bar(0, astar_occlusion, label='astar')
-    plt.bar(1, spring_occlusion, label='spring')
+    plt.plot(astar_occlusion, label='astar')
+    plt.plot(spring_occlusion, label='spring')
     plt.legend()
     plt.ylabel("Occlusion")
     plt.xlabel("Algorithm")

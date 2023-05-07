@@ -18,7 +18,7 @@
 
 
         <!--AgentClusters-->
-    <agent x="1" y="7" n="1" dx="1" dy="1" type="3">
+    <agent x="2" y="7" n="1" dx="1" dy="1" type="3">
       <addwaypoint id="enter_bookshop"/>
       <addwaypoint id="leave_bookshop"/>
     </agent>
